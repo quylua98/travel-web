@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import {
   Button,
   Input,
@@ -26,6 +27,7 @@ class RegisterForm extends React.Component {
       password: "",
       rePassword: "",
       error: "",
+      status: "",
       modal: false
     };
   }
@@ -73,33 +75,36 @@ class RegisterForm extends React.Component {
     } else {
       let current = new Date();
       if (this.state.year >= current.getFullYear())
-        if (this.state.year >= current.month())
-          if (this.state.year > current.getDay())
+        if (this.state.month >= current.getMonth())
+          if (this.state.day > current.getDay())
             this.setState({ error: "Date of birth is incorrect." });
       return false;
     }
     return true;
   };
-  onSubmit = event => {
+  onSubmit = (event) => {
     event.preventDefault();
-    if (this.validate()) {
+    if (this.validate) {
       const user = {
         username: this.state.username,
         email: this.state.email,
-        name: this.state.fullname,
-        sex: this.state.sex,
-        day: this.state.day,
-        month: this.state.month,
-        year: this.state.year,
+        fullName: this.state.fullname,
+        gender: this.state.sex,
+        day: `${this.state.day}-${this.state.month}-${this.state.year}`,
         password: this.state.password
       };
-
-      // axios.post(`/register`, { user })
-      //   .then(res => {
-      //     console.log(res);
-      //     console.log(res.data);
-      //   })
+      axios.put(`/api/auth/register`, user )
+        .then(res => {
+          this.setState({ status: "Success" });
+        })
+        .catch(error =>{
+          // console.log(error);
+          if (error.response) {
+            this.setState({ error: error.response.data.message });
+          }
+        })
     }
+    console.log(this.validate);
   };
 
   render() {
@@ -239,12 +244,15 @@ class RegisterForm extends React.Component {
               </Col>
             </FormGroup>
             <FormGroup row>
-              <Badge href="#" color="danger">
+              <Badge color="danger">
                 {this.state.error}
+              </Badge>
+              <Badge color="success">
+                {this.state.status}
               </Badge>
             </FormGroup>
             <FormGroup row className="justify-content-center">
-              <Button outline color="secondary" onClick={this.onSubmit}>
+              <Button outline color="secondary" onClick={(e) => this.onSubmit(e)}>
                 Register
               </Button>
             </FormGroup>

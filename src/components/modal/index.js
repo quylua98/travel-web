@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import axios from "axios";  
+import axios from "axios";
 import { FaUserAlt, FaLock } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { connect } from "react-redux";
+import { Link,withRouter } from "react-router-dom";
+import { logout, login, validateToken } from "../../modules/userAuthentication/auth";
 import {
   Button,
   Modal,
@@ -15,20 +17,28 @@ import {
   Form,
   FormGroup,
   Label,
-  CustomInput,
-  Col,
-  Row,
+  NavItem,
+  NavLink,
   Badge
 } from "reactstrap";
-import { API_URL } from '../../constants';
+import { API_URL } from "../../constants";
 
-export default class SignInModal extends React.Component {
+class SignInModal extends React.Component {
+
+  componentWillMount() {
+    let token = {
+      token:localStorage.getItem("token")
+    };
+    
+    this.props.validateToken(token);
+  }
+
   constructor(props) {
     super(props);
     this.state = {
       username: "",
       password: "",
-      error : "",
+      error: "",
       modal: false
     };
 
@@ -57,31 +67,64 @@ export default class SignInModal extends React.Component {
     }
     this.setState({ error: "" });
     return true;
-  }
+  };
 
   onSubmit = event => {
     event.preventDefault();
     if (this.validate()) {
-      const user = {
-        username: this.state.username,
-        password: this.state.password
-      };
-      axios.post(`/api/auth/login`, user ,{'Content-Type': 'application/json'})
-        .then(res => {
-          localStorage.setItem("token",res.data);
-        })
-        .catch(error => {
-          this.setState({ error: error });
-        })
+      const { username, password } = this.state;
+      const u = username ? username.trim() : "";
+      const p = password ? password.trim() : "";
+      if (u.length === 0) {
+        return;
+      }
+      this.props.login(u, p);
+      this.toggle();
     }
   };
 
+  authLink(signedIn) {
+    console.log(signedIn);
+    if (!signedIn) {
+      return (
+        <NavItem>
+          <Button color="danger" onClick={this.toggle}>
+            {this.props.buttonLabel}
+          </Button>
+        </NavItem>
+      );
+    }
+    return (
+      <NavItem>
+        <NavLink>
+          <a href="#" onClick={() => this.props.logout()}>
+            Sign Out
+          </a>
+        </NavLink>
+      </NavItem>
+    );
+  }
+
+  userLink(signedIn, username) {
+    if (signedIn) {
+      return (
+        <NavItem>
+          <NavLink>
+            <div className="text-info">{username}</div>
+          </NavLink>
+        </NavItem>
+      );
+    }
+    return null;
+  }
+
   render() {
+    const { signedIn, username } = this.props.auth;
+    console.log(`index ${username}`);
     return (
       <div>
-        <Button color="danger" onClick={this.toggle}>
-          {this.props.buttonLabel}
-        </Button>
+        {this.userLink(signedIn, username)}
+        {this.authLink(signedIn)}
         <Form>
           <Modal
             fade={false}
@@ -94,17 +137,29 @@ export default class SignInModal extends React.Component {
               <FormGroup>
                 <InputGroup>
                   <InputGroupAddon addonType="prepend">
-                    <InputGroupText><FaUserAlt /></InputGroupText>
+                    <InputGroupText>
+                      <FaUserAlt />
+                    </InputGroupText>
                   </InputGroupAddon>
-                  <Input type="text" name="username" onChange={this.myChangeHandler} />
+                  <Input
+                    type="text"
+                    name="username"
+                    onChange={this.myChangeHandler}
+                  />
                 </InputGroup>
               </FormGroup>
               <FormGroup>
                 <InputGroup>
                   <InputGroupAddon addonType="prepend">
-                    <InputGroupText><FaLock /></InputGroupText>
+                    <InputGroupText>
+                      <FaLock />
+                    </InputGroupText>
                   </InputGroupAddon>
-                  <Input type="password" name="password" onChange={this.myChangeHandler} />
+                  <Input
+                    type="password"
+                    name="password"
+                    onChange={this.myChangeHandler}
+                  />
                 </InputGroup>
               </FormGroup>
               <FormGroup check>
@@ -130,7 +185,7 @@ export default class SignInModal extends React.Component {
               </FormGroup>
             </ModalBody>
             <ModalFooter>
-            <Badge href="#" color="danger">
+              <Badge href="#" color="danger">
                 {this.state.error}
               </Badge>
             </ModalFooter>
@@ -140,3 +195,10 @@ export default class SignInModal extends React.Component {
     );
   }
 }
+
+const mapStateToProps = state => ({
+  auth: state.auth
+});
+const mapDispatchToProps = { logout, login, validateToken };
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(SignInModal));
