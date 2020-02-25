@@ -90,7 +90,7 @@ class RegisterForm extends React.Component {
         email: this.state.email,
         fullName: this.state.fullname,
         gender: this.state.sex,
-        day: `${this.state.day}-${this.state.month}-${this.state.year}`,
+        day: `${this.state.year}-${this.state.month}-${this.state.day}`,
         password: this.state.password
       };
       axios.put(`/api/auth/register`, user )

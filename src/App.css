@@ -59,6 +59,23 @@
 
 .register-form {
   border-radius: 6px;
-  box-shadow: 0px 8px 36px #222;
+  box-shadow: 0px 2px 10px #222;
   background-color: #fefefe;
+}
+
+.gedf-wrapper {
+  margin-top: 0.97rem;
+}
+
+@media (min-width: 992px) {
+  .gedf-main {
+      padding-left: 4rem;
+      padding-right: 4rem;
+  }
+  .gedf-card {
+      margin-bottom: 2.77rem;
+  }
+}
+.card-header-white {
+  background-color: #fff;
 }
