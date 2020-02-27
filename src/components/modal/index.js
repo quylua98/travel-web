@@ -181,7 +181,9 @@ class SignInModal extends React.Component {
                   Register
                 </Link>
                 <span>|</span>
-                <a href="#">Reset Password</a>
+                <React.Fragment>np
+                  <Link to="/reset"  onClick={this.toggle}>Reset Password</Link>
+                  </React.Fragment>
               </FormGroup>
             </ModalBody>
             <ModalFooter>
