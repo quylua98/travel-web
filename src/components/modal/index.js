@@ -2,8 +2,12 @@ import React, { useState } from "react";
 import axios from "axios";
 import { FaUserAlt, FaLock } from "react-icons/fa";
 import { connect } from "react-redux";
-import { Link,withRouter } from "react-router-dom";
-import { logout, login, validateToken } from "../../modules/userAuthentication/auth";
+import { Link, withRouter } from "react-router-dom";
+import {
+  logout,
+  login,
+  getUserProfile
+} from "../../modules/userAuthentication/auth";
 import {
   Button,
   Modal,
@@ -21,16 +25,11 @@ import {
   NavLink,
   Badge
 } from "reactstrap";
-import { API_URL } from "../../constants";
+import { JWT_TOKEN } from "../../constants/constants";
 
 class SignInModal extends React.Component {
-
-  componentWillMount() {
-    let token = {
-      token:localStorage.getItem("token")
-    };
-    
-    this.props.validateToken(token);
+  async componentWillMount() {
+    await this.props.getUserProfile();
   }
 
   constructor(props) {
@@ -38,6 +37,7 @@ class SignInModal extends React.Component {
     this.state = {
       username: "",
       password: "",
+      remember: false,
       error: "",
       modal: false
     };
@@ -50,6 +50,13 @@ class SignInModal extends React.Component {
       modal: !this.state.modal
     });
   }
+
+  toggleChange = () => {
+    console.log(this.state.remember);
+    this.setState({
+      remember: !this.state.remember
+    });
+  };
 
   myChangeHandler = event => {
     let nam = event.target.name;
@@ -78,13 +85,12 @@ class SignInModal extends React.Component {
       if (u.length === 0) {
         return;
       }
-      this.props.login(u, p);
-      this.toggle();
+      let r = this.state.remember;
+      this.props.login(u, p, r);
     }
   };
 
   authLink(signedIn) {
-    console.log(signedIn);
     if (!signedIn) {
       return (
         <NavItem>
@@ -110,7 +116,7 @@ class SignInModal extends React.Component {
       return (
         <NavItem>
           <NavLink>
-            <div className="text-info">{username}</div>
+            <div className="text-info">Hi {username},</div>
           </NavLink>
         </NavItem>
       );
@@ -119,10 +125,9 @@ class SignInModal extends React.Component {
   }
 
   render() {
-    const { signedIn, username } = this.props.auth;
-    console.log(`index ${username}`);
+    const { signedIn, username, error } = this.props.auth;
     return (
-      <div>
+      <>
         {this.userLink(signedIn, username)}
         {this.authLink(signedIn)}
         <Form>
@@ -163,7 +168,11 @@ class SignInModal extends React.Component {
                 </InputGroup>
               </FormGroup>
               <FormGroup check>
-                <Input type="checkbox" name="check" id="remember" />
+                <Input
+                  type="checkbox"
+                  id="remember"
+                  onChange={this.toggleChange}
+                />
                 <Label for="remember" check>
                   Remember Password
                 </Label>
@@ -188,10 +197,13 @@ class SignInModal extends React.Component {
               <Badge href="#" color="danger">
                 {this.state.error}
               </Badge>
+              <Badge href="#" color="danger">
+                {error}
+              </Badge>
             </ModalFooter>
           </Modal>
         </Form>
-      </div>
+      </>
     );
   }
 }
@@ -199,6 +211,8 @@ class SignInModal extends React.Component {
 const mapStateToProps = state => ({
   auth: state.auth
 });
-const mapDispatchToProps = { logout, login, validateToken };
+const mapDispatchToProps = { logout, login, getUserProfile };
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(SignInModal));
+export default withRouter(
+  connect(mapStateToProps, mapDispatchToProps)(SignInModal)
+);

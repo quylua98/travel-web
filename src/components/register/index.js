@@ -50,7 +50,7 @@ class RegisterForm extends React.Component {
     this.setState({ [nam]: val });
   };
 
-  createOptionTag(start,stop){
+  createOptionTag(start, stop) {
     let option = [];
     let i = start;
     for (i; i <= stop; i++) {
@@ -82,7 +82,7 @@ class RegisterForm extends React.Component {
     }
     return true;
   };
-  onSubmit = (event) => {
+  onSubmit = event => {
     event.preventDefault();
     if (this.validate) {
       const user = {
@@ -93,16 +93,17 @@ class RegisterForm extends React.Component {
         day: `${this.state.year}-${this.state.month}-${this.state.day}`,
         password: this.state.password
       };
-      axios.put(`/api/auth/register`, user )
+      axios
+        .put(`/api/auth/register`, user)
         .then(res => {
           this.setState({ status: "Success" });
         })
-        .catch(error =>{
+        .catch(error => {
           // console.log(error);
           if (error.response) {
             this.setState({ error: error.response.data.message });
           }
-        })
+        });
     }
     console.log(this.validate);
   };
@@ -188,7 +189,7 @@ class RegisterForm extends React.Component {
                     name="day"
                     onChange={this.myChangeHandler}
                   >
-                    {this.createOptionTag(1,31)}
+                    {this.createOptionTag(1, 31)}
                   </Input>
                 </FormGroup>
               </Col>
@@ -200,7 +201,7 @@ class RegisterForm extends React.Component {
                     name="month"
                     onChange={this.myChangeHandler}
                   >
-                    {this.createOptionTag(1,12)}
+                    {this.createOptionTag(1, 12)}
                   </Input>
                 </FormGroup>
               </Col>
@@ -212,7 +213,7 @@ class RegisterForm extends React.Component {
                     name="year"
                     onChange={this.myChangeHandler}
                   >
-                    {this.createOptionTag(1900,this.state.year)}                    
+                    {this.createOptionTag(1900, this.state.year)}
                   </Input>
                 </FormGroup>
               </Col>
@@ -244,15 +245,11 @@ class RegisterForm extends React.Component {
               </Col>
             </FormGroup>
             <FormGroup row>
-              <Badge color="danger">
-                {this.state.error}
-              </Badge>
-              <Badge color="success">
-                {this.state.status}
-              </Badge>
+              <Badge color="danger">{this.state.error}</Badge>
+              <Badge color="success">{this.state.status}</Badge>
             </FormGroup>
             <FormGroup row className="justify-content-center">
-              <Button outline color="secondary" onClick={(e) => this.onSubmit(e)}>
+              <Button outline color="secondary" onClick={e => this.onSubmit(e)}>
                 Register
               </Button>
             </FormGroup>
