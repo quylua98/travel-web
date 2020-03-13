@@ -1,9 +1,8 @@
 import axios from "axios";
-import jwt_decode from "jwt-decode";
 import { JWT_TOKEN, JWT_PREFIX, JWT_HEADER } from "../../constants/constants";
 
 const defaultState = {
-  signedIn: false,
+  signedIn: null,
   username: "",
   error: "",
   authFailure: false
@@ -26,7 +25,12 @@ export default (state = defaultState, action) => {
         authFailure: true
       };
     case "LOGGED_OUT":
-      return defaultState;
+      return {
+        signedIn: false,
+        username: "",
+        error: "",
+        authFailure: false
+      };
     default:
       return state;
   }
@@ -50,21 +54,12 @@ export function login(username, password, remember) {
   return dispatch => {
     const credentials = { username, password };
     axios
-      .post(`/api/auth/login`, credentials)
+      .post(`/api/login`, credentials)
       .then(success => {
         let authorization = success.data;
         if (remember) localStorage.setItem(JWT_TOKEN, authorization);
         else sessionStorage.setItem(JWT_TOKEN, authorization);
-        let token = jwt_decode(authorization);
         this.getUserProfile();
-        // dispatch(
-        //   authenticated({
-        //     signedIn: true,
-        //     username: token.sub.username,
-        //     error: "",
-        //     authFailure: false
-        //   })
-        // );
       })
       .catch(error => {
         dispatch(
@@ -72,7 +67,7 @@ export function login(username, password, remember) {
             signedIn: false,
             username: "",
             // error: err.message,
-            error: error.response.data.message,
+            error: error.response.data,
             authFailure: true
           })
         );
@@ -88,10 +83,9 @@ export function loggedOut() {
 
 export const logout = () => {
   return dispatch => {
-    axios.post("/api/auth/logout").then(() => {
-      localStorage.removeItem(JWT_TOKEN);
-      dispatch(loggedOut());
-    });
+    localStorage.removeItem(JWT_TOKEN);
+    sessionStorage.removeItem(JWT_TOKEN);
+    dispatch(loggedOut());
   };
 };
 
@@ -112,7 +106,7 @@ export const getUserProfile = () => {
       [JWT_HEADER]: `${JWT_PREFIX} ${token}`
     };
     axios
-      .get(`/api/auth/user-profile`, { headers })
+      .get(`/api/member/profile`, { headers })
       .then(res => {
         dispatch(
           authenticated({
@@ -124,8 +118,10 @@ export const getUserProfile = () => {
         );
       })
       .catch(error => {
-        console.log("catch validate " + error);
-        dispatch(loggedOut());
+        if (error.response) {
+          console.log("catch validate " + error);
+          dispatch(loggedOut());
+        }
       });
   };
 };

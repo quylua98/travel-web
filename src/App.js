@@ -1,31 +1,34 @@
 import React from "react";
 import "./App.css";
-import "./assets/css/font-awesome.css";
-import AppNav from "./components/appnav";
-import RegisterForm from "./components/register";
-import ResetForm from "./components/resetPassword";
-import { Container, Row, Col } from "reactstrap";
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  browserHistory
-} from "react-router-dom";
-import Home from "./components/home";
+import AppNav from "./containers/appnav";
+import RegisterForm from "./containers/register";
+import ResetForm from "./containers/resetPassword";
+import NewPassword from "./containers/newPassword";
+import UserProfile from "./containers/userProfile";
+import CallBackLoginGoogle from "./components/LoginSocial";
+import Home from "./containers/home";
+
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 const App = () => (
   <div style={{ backgroundColor: "#F2F2F2" }}>
     <Router>
       <div>
         <AppNav />
-        <Container>
+        <>
           <Switch>
             <Route exact path="/" component={Home} />
             <Route exact path="/register" component={RegisterForm} />
             <Route exact path="/reset" component={ResetForm} />
+            <Route exact path="/new-password" component={NewPassword} />
+            <Route exact path="/user-profile" component={UserProfile} />
+            <Route
+              exact
+              path="/oauth2/redirect"
+              component={CallBackLoginGoogle}
+            />
           </Switch>
-        </Container>
+        </>
       </div>
     </Router>
   </div>

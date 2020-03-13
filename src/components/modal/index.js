@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React from "react";
 import { FaUserAlt, FaLock } from "react-icons/fa";
 import { connect } from "react-redux";
 import { Link, withRouter } from "react-router-dom";
+import avatar from "../../assets/avatar-41x41.jpg";
 import {
   logout,
   login,
@@ -23,22 +23,24 @@ import {
   Label,
   NavItem,
   NavLink,
-  Badge
+  Badge,
+  Media
 } from "reactstrap";
-import { JWT_TOKEN } from "../../constants/constants";
+import { GOOGLE_AUTH_URL } from "../../constants/constants";
 
 class SignInModal extends React.Component {
-  async componentWillMount() {
-    await this.props.getUserProfile();
+  componentWillMount() {
+    this.props.getUserProfile();
   }
 
   constructor(props) {
     super(props);
+
     this.state = {
       username: "",
       password: "",
       remember: false,
-      error: "",
+      error: [],
       modal: false
     };
 
@@ -52,7 +54,6 @@ class SignInModal extends React.Component {
   }
 
   toggleChange = () => {
-    console.log(this.state.remember);
     this.setState({
       remember: !this.state.remember
     });
@@ -65,15 +66,21 @@ class SignInModal extends React.Component {
   };
 
   validate = () => {
+    let put = [];
     if (this.state.username === "") {
-      this.setState({ error: "Username is required." });
-      return false;
-    } else if (this.state.password === "") {
-      this.setState({ error: "Password is required." });
-      return false;
+      put.push("Username is required.");
     }
-    this.setState({ error: "" });
-    return true;
+    if (this.state.password === "") {
+      put.push("Password is required.");
+    }
+
+    if (put && put.length > 0) {
+      this.setState({ error: put });
+      return false;
+    } else {
+      this.setState({ error: [] });
+      return true;
+    }
   };
 
   onSubmit = event => {
@@ -87,10 +94,12 @@ class SignInModal extends React.Component {
       }
       let r = this.state.remember;
       this.props.login(u, p, r);
+      this.toggle();
     }
   };
 
   authLink(signedIn) {
+    if (signedIn == null) return;
     if (!signedIn) {
       return (
         <NavItem>
@@ -103,9 +112,9 @@ class SignInModal extends React.Component {
     return (
       <NavItem>
         <NavLink>
-          <a href="#" onClick={() => this.props.logout()}>
+          <Button color="link" onClick={() => this.props.logout()}>
             Sign Out
-          </a>
+          </Button>
         </NavLink>
       </NavItem>
     );
@@ -114,11 +123,20 @@ class SignInModal extends React.Component {
   userLink(signedIn, username) {
     if (signedIn) {
       return (
-        <NavItem>
-          <NavLink>
-            <div className="text-info">Hi {username},</div>
-          </NavLink>
-        </NavItem>
+        <>
+          <NavItem>
+            <Media left href="#">
+              <Media object src={avatar} style={userAvatar} />
+            </Media>
+          </NavItem>
+          <NavItem>
+            <NavLink>
+              <Link to="user-profile" className="text-info">
+                Hi {username},
+              </Link>
+            </NavLink>
+          </NavItem>
+        </>
       );
     }
     return null;
@@ -182,16 +200,15 @@ class SignInModal extends React.Component {
                   Login
                 </Button>
                 <span> OR </span>
-                <Button color="danger" onClick={this.toggle}>
+                <a color="danger" href={GOOGLE_AUTH_URL}>
                   Login with Google
-                </Button>
+                </a>
                 <br />
                 <Link to="register" onClick={this.toggle}>
                   Register
                 </Link>
-                <span>|</span>
+                <span> - </span>
                 <React.Fragment>
-                  np
                   <Link to="/reset" onClick={this.toggle}>
                     Reset Password
                   </Link>
@@ -199,9 +216,11 @@ class SignInModal extends React.Component {
               </FormGroup>
             </ModalBody>
             <ModalFooter>
-              <Badge href="#" color="danger">
-                {this.state.error}
-              </Badge>
+              {this.state.error.map(err => (
+                <Badge href="#" color="danger">
+                  {err}
+                </Badge>
+              ))}
               <Badge href="#" color="danger">
                 {error}
               </Badge>
@@ -213,8 +232,14 @@ class SignInModal extends React.Component {
   }
 }
 
+const userAvatar = {
+  maxHeight: 30,
+  borderRadius: 20
+};
+
 const mapStateToProps = state => ({
-  auth: state.auth
+  auth: state.auth,
+  modal: state.auth.signedIn
 });
 const mapDispatchToProps = { logout, login, getUserProfile };
 

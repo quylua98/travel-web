@@ -3,10 +3,12 @@ import axios from "axios";
 import { ListGroup, ListGroupItem, Media } from "reactstrap";
 import avatar from "../../assets/avatar-41x41.jpg";
 import arrowBottom from "../../assets/arrow-bottom.png";
+import seeMoreBottom from "../../assets/see-more.png";
+import { SIZE_PAGE_ITEM } from "../../constants/constants";
 
 class LeftSideBar extends React.Component {
   componentDidMount() {
-    axios.get("/api/plan/hot?page=0").then(res => {
+    axios.get(`/api/plan/hot-plan?page=0size=${SIZE_PAGE_ITEM}`).then(res => {
       const hotPlans = res.data.plans;
       this.setState({ hotPlans });
       this.setState({ hotPlanCurrentPage: res.data.currentPage + 1 });
@@ -24,18 +26,18 @@ class LeftSideBar extends React.Component {
   }
 
   seeMoreButton() {
-    if (this.state.hotPlanCurrentPage <= this.state.hotPlanTotalPage) {
+    if (this.state.hotPlanCurrentPage < this.state.hotPlanTotalPage) {
       return (
         <ListGroupItem style={listGroupItem}>
           <Media>
             <Media left href="#">
-              <Media object src={avatar} style={planAvatar} />
+              <Media object src={seeMoreBottom} style={seeMoreButton} />
             </Media>
-            <Media body style={planName}>
+            <Media body style={seeMoreText}>
               See More
             </Media>
             <Media right onClick={this.seeMoreHotPlan.bind(this)}>
-              <Media object src={arrowBottom} style={planAvatar} />
+              <Media object src={arrowBottom} style={arrowBottomStyle} />
             </Media>
           </Media>
         </ListGroupItem>
@@ -47,10 +49,14 @@ class LeftSideBar extends React.Component {
   seeMoreHotPlan() {
     let page = this.state.hotPlanCurrentPage;
     page++;
-    axios.get("/api/plan/hot", { params: { page: page } }).then(res => {
-      let hotPlans = [...this.state.hotPlans, ...res.data.plans];
-      this.setState({ hotPlans });
-    });
+    axios
+      .get("/api/plan/hot-plan", {
+        params: { page: page, size: SIZE_PAGE_ITEM }
+      })
+      .then(res => {
+        let hotPlans = [...this.state.hotPlans, ...res.data.plans];
+        this.setState({ hotPlans });
+      });
     this.setState({ hotPlanCurrentPage: page });
   }
 
@@ -95,9 +101,26 @@ const planAvatar = {
   borderRadius: 9
 };
 
+const seeMoreButton = {
+  maxHeight: 30
+};
+
+const seeMoreText = {
+  marginTop: 3,
+  marginLeft: 10,
+  fontSize: 14
+};
+
 const planName = {
-  marginTop: 8,
-  marginLeft: 10
+  marginLeft: 10,
+  marginTop: 10,
+  fontSize: 15
+};
+
+const arrowBottomStyle = {
+  maxHeight: 20,
+  borderRadius: 20,
+  opacity: 0.7
 };
 
 export default LeftSideBar;

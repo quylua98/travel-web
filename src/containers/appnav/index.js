@@ -1,8 +1,8 @@
 import React from "react";
-import { Link, BrowserRouter, Switch, Route } from "react-router-dom";
-import SignInModal from "../modal";
+import { Link } from "react-router-dom";
+import SignInModal from "../../components/modal";
 import logo from "../../assets/logo.png";
-import { Navbar, NavbarBrand, Nav, NavItem, Media, NavLink } from "reactstrap";
+import { Navbar, Nav, NavItem, Media, NavLink } from "reactstrap";
 
 class AppNav extends React.Component {
   render() {
@@ -18,7 +18,11 @@ class AppNav extends React.Component {
               </NavLink>
             </NavItem>
           </Nav>
-          <Nav className="d-flex ml-auto" horizontal="end" navbar>
+          <Nav
+            className="d-flex ml-auto align-items-center"
+            horizontal="end"
+            navbar
+          >
             {/* <Button onclick={<SignUpModal isShow =! isShow />} color="info">Sign In</Button> */}
             <SignInModal buttonLabel="Sign In" />
           </Nav>
